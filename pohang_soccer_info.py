@@ -487,7 +487,7 @@ with tab2:
                 return [''] * len(row)
             
             styled_df = display_df.style.apply(highlight_rest, axis=1)
-            st.dataframe(styled_df, use_container_width=True, hide_index=True)
+            st.dataframe(styled_df, width='stretch', hide_index=True)
         else:
             st.warning(f"❌ {selected_team_name}의 경기 데이터가 없습니다.")
 
@@ -585,7 +585,7 @@ with tab3:
         )
     
     fig_matches.update_layout(showlegend=False, height=400)
-    st.plotly_chart(fig_matches, use_container_width=True)
+    st.plotly_chart(fig_matches, width='stretch')
     
     # 경기 횟수가 적은 팀 상세 정보
     if len(below_avg_teams) > 0:
@@ -627,7 +627,7 @@ with tab3:
         return [''] * 6
     
     styled_stats_df = stats_df.style.apply(highlight_balanced, axis=1)
-    st.dataframe(styled_stats_df, use_container_width=True, hide_index=True)
+    st.dataframe(styled_stats_df, width='stretch', hide_index=True)
     
     
 # -------------------------------

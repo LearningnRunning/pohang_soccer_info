@@ -11,10 +11,17 @@
 ## 실행 방법
 
 ```bash
-# 의존성 설치
-pip install -r requirements.txt
+# uv로 가상환경 생성 및 의존성 설치
+uv sync
 
 # 앱 실행
+uv run streamlit run pohang_soccer_info.py
+```
+
+또는 기존 방식:
+
+```bash
+pip install -r requirements.txt
 streamlit run pohang_soccer_info.py
 ```
 
