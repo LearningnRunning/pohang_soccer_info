@@ -232,15 +232,6 @@ wheels = [
 ]
 
 [[package]]
-name = "kr-holidays"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/36/04/5594325cacbe567f5e6d59eb42770709b8abd62bbf4e394aa8c38de4aa50/kr_holidays-1.0.0.tar.gz", hash = "sha256:296a56cc75cc0637cf8a7772b2b5c5630e7a52de945254aa83c71b2c41263315", size = 179648, upload-time = "2025-09-15T07:07:54.775Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/9e/3c496ca1af26ce407efca0abd9fa00b10490af4b2e3e51116494ac51eb2e/kr_holidays-1.0.0-py3-none-any.whl", hash = "sha256:ef16eadcc46f7759f9c5571c660c61e85aad91bb4ef284b61aad45efff449d19", size = 206006, upload-time = "2025-09-15T07:07:52.986Z" },
-]
-
-[[package]]
 name = "markupsafe"
 version = "3.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -570,7 +561,6 @@ name = "pohang-soccer-info"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "kr-holidays" },
     { name = "pandas" },
     { name = "plotly" },
     { name = "streamlit" },
@@ -578,7 +568,6 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "kr-holidays" },
     { name = "pandas", specifier = ">=2.0.0" },
     { name = "plotly", specifier = ">=5.17.0" },
     { name = "streamlit", specifier = ">=1.28.0" },

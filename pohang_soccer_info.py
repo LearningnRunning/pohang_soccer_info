@@ -5,13 +5,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-try:
-    from kr_holidays import is_holiday, is_working_day
-    KR_HOLIDAYS_AVAILABLE = True
-except ImportError:
-    KR_HOLIDAYS_AVAILABLE = False
-    print("kr_holidays 라이브러리를 사용할 수 없습니다. 기본 날짜 계산을 사용합니다.")
-
 # -------------------------------
 # 1️⃣ 데이터 로드
 # -------------------------------
