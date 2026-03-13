@@ -1,108 +1,18 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from config import SEASON_YEAR, TEAM_NAMES, SCHEDULE, PAGE_TITLE, PAGE_ICON, SEASON_DESCRIPTION
+
 # -------------------------------
 # 1️⃣ 데이터 로드
 # -------------------------------
-# 사용자가 제공한 월별 대진표 (팀 조합 다양성 최적화 - 중복 조합 0회)
-schedule = {
-    '2026-01': {
-        'A구장': [10, 2, 7],
-        'B구장': [3, 6, 8],
-        'C구장': [4, 5, 9],
-        '휴식': 1
-    },
-    '2026-02': {
-        'A구장': [4, 10, 1],
-        'B구장': [9, 7, 5],
-        'C구장': [3, 8, 2],
-        '휴식': 6
-    },
-    '2026-03': {
-        'A구장': [7, 8, 1],
-        'B구장': [4, 2, 6],
-        'C구장': [3, 10, 5],
-        '휴식': 9
-    },
-    '2026-04': {
-        'A구장': [7, 3, 4],
-        'B구장': [6, 2, 10],
-        'C구장': [5, 9, 1],
-        '휴식': 8
-    },
-    '2026-05': {
-        'A구장': [2, 6, 1],
-        'B구장': [5, 8, 10],
-        'C구장': [9, 4, 7],
-        '휴식': 3
-    },
-    '2026-06': {
-        'A구장': [6, 5, 9],
-        'B구장': [1, 10, 7],
-        'C구장': [4, 3, 8],
-        '휴식': 2
-    },
-    '2026-07': {
-        'A구장': [3, 7, 5],
-        'B구장': [2, 9, 1],
-        'C구장': [8, 6, 4],
-        '휴식': 10
-    },
-    '2026-08': {
-        'A구장': [6, 2, 8],
-        'B구장': [4, 10, 9],
-        'C구장': [1, 5, 7],
-        '휴식': 3
-    },
-    '2026-09': {
-        'A구장': [5, 2, 4],
-        'B구장': [3, 1, 7],
-        'C구장': [10, 6, 8],
-        '휴식': 9
-    },
-    '2026-10': {
-        'A구장': [4, 8, 9],
-        'B구장': [10, 7, 6],
-        'C구장': [3, 1, 2],
-        '휴식': 5
-    },
-    '2026-11': {
-        'A구장': [10, 9, 3],
-        'B구장': [5, 8, 1],
-        'C구장': [6, 2, 7],
-        '휴식': 4
-    },
-    '2026-12': {
-        'A구장': [8, 1, 10],
-        'B구장': [5, 4, 3],
-        'C구장': [6, 2, 9],
-        '휴식': 7
-    }
-}
-
-
-
 # 구장 매핑 (A구장=1구장, B구장=2구장, C구장=3구장)
 def field_map(field_char):
     return {'A구장': 1, 'B구장': 2, 'C구장': 3}[field_char]
-
-# 팀 이름 매핑
-TEAM_NAMES = {
-    1: '포항OB',
-    2: '동부',
-    3: '장량',
-    4: '오천',
-    5: '포유',
-    6: '유강',
-    7: '백호',
-    8: '육사(64)',
-    9: '흑룡',
-    10: '청호'
-}
 
 # 팀 이름으로 번호 찾기 (역매핑)
 TEAM_NUMBERS = {name: num for num, name in TEAM_NAMES.items()}
@@ -118,14 +28,14 @@ def month_key_to_display(month_key):
 
 # 쉬는 팀 정보 추출
 rest_teams = {}
-for month_key, month_data in schedule.items():
+for month_key, month_data in SCHEDULE.items():
     display_month = month_key_to_display(month_key)
     rest_teams[display_month] = month_data.get('휴식')
 
-# schedule을 data 리스트로 변환
+# SCHEDULE을 data 리스트로 변환
 # 각 구장의 팀 리스트에서 3개씩 조합하여 경기 생성
 data = []
-for month_key, month_data in sorted(schedule.items()):
+for month_key, month_data in sorted(SCHEDULE.items()):
     month_str = month_key_to_display(month_key)
     
     for field_key in ['A구장', 'B구장', 'C구장']:
@@ -179,7 +89,7 @@ for month, field, team1, team2 in data:
     match_idx = month_match_counts[month]
     
     # 실제 날짜 계산 (매월 2번째 주 토요일)
-    match_date = get_match_date(2026, month)
+    match_date = get_match_date(SEASON_YEAR, month)
     match_weekday = get_weekday(match_date)
     
     # 경기 순서 (1부터 시작)
@@ -194,14 +104,14 @@ df = pd.DataFrame(data_with_date, columns=["월", "구장", "팀1", "팀2", "날
 # 2️⃣ 페이지 구성 및 스타일
 # -------------------------------
 st.set_page_config(
-    page_title="⚽ 포항 축구 대진표",
-    page_icon="⚽",
+    page_title=PAGE_TITLE,
+    page_icon=PAGE_ICON,
     layout="wide",
     initial_sidebar_state="collapsed",
     menu_items={
         'Get Help': None,
         'Report a bug': None,
-        'About': "# 포항 축구 구장 대진표\n### 2026 시즌 전체 일정 관리 시스템\n모든 팀이 공정하게 경기를 치를 수 있도록 구성되었습니다."
+        'About': f"# 포항60대축구연합회 리그전 대진표\n### {SEASON_DESCRIPTION}\n모든 팀이 공정하게 경기를 치를 수 있도록 구성되었습니다."
     }
 )
 
@@ -296,10 +206,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 헤더
-st.markdown("""
+st.markdown(f"""
 <div class="main-header">
-    <h1>⚽ 포항 축구 구장 대진표</h1>
-    <p style="font-size: 1.1rem; margin: 0.5rem 0 0 0;">2026 시즌 전체 일정 관리 시스템</p>
+    <h1>{PAGE_TITLE}</h1>
+    <p style="font-size: 1.1rem; margin: 0.5rem 0 0 0;">{SEASON_DESCRIPTION}</p>
     <p style="font-size: 0.9rem; opacity: 0.9; margin: 0.5rem 0 0 0;">🏆 모두를 위한 공정한 대진표</p>
 </div>
 """, unsafe_allow_html=True)
@@ -312,7 +222,7 @@ team_field_stats = {}
 for team in range(1, 11):
     team_field_stats[team] = {'A구장': 0, 'B구장': 0, 'C구장': 0, '휴식': 0, '총경기수': 0}
     
-for month_key, month_data in schedule.items():
+for month_key, month_data in SCHEDULE.items():
     # 쉬는 팀 체크
     rest_team = month_data.get('휴식')
     if rest_team:
@@ -347,9 +257,20 @@ tab1, tab2, tab3 = st.tabs(["🏟️ 이번 주 구장 현황", "📊 팀별 경
 # 4️⃣ 탭 1: 이번 주 구장 현황
 # -------------------------------
 with tab1:
-    # 월 선택
+    # 월 선택 (한국 시간 기준 현재 월로 기본 선택)
     month_options = sorted(df["월"].unique(), key=lambda x: int(x.replace("월", "")))
-    selected_month = st.selectbox("📅 월 선택", options=month_options, index=0)
+    
+    # KST 기준 현재 월 계산
+    KST = timezone(timedelta(hours=9))
+    current_month_str = f"{datetime.now(KST).month}월"
+    
+    # 현재 월이 스케줄에 있으면 해당 월로, 없으면 첫 번째 월로 기본 선택
+    try:
+        default_index = month_options.index(current_month_str)
+    except ValueError:
+        default_index = 0
+    
+    selected_month = st.selectbox("📅 월 선택", options=month_options, index=default_index)
     st.markdown("---")
     
     # 선택한 월의 데이터만 사용
@@ -425,16 +346,16 @@ with tab2:
     if selected_team:
         # 팀별 일정 생성
         team_schedule = []
-        for month_key in sorted(schedule.keys()):
+        for month_key in sorted(SCHEDULE.keys()):
             month_display = month_key_to_display(month_key)
-            month_data = schedule[month_key]
+            month_data = SCHEDULE[month_key]
             
             # 쉬는 팀 체크
             if month_data.get('휴식') == selected_team:
                 team_schedule.append({
                     '월': month_display,
-                    '날짜': get_match_date(2026, month_display),
-                    '요일': get_weekday(get_match_date(2026, month_display)),
+                    '날짜': get_match_date(SEASON_YEAR, month_display),
+                    '요일': get_weekday(get_match_date(SEASON_YEAR, month_display)),
                     '구장': '-',
                     '함께하는 팀들': '-',
                     '상태': '휴식'
@@ -450,8 +371,8 @@ with tab2:
                         other_teams = [t for t in teams if t != selected_team]
                         team_schedule.append({
                             '월': month_display,
-                            '날짜': get_match_date(2026, month_display),
-                            '요일': get_weekday(get_match_date(2026, month_display)),
+                            '날짜': get_match_date(SEASON_YEAR, month_display),
+                            '요일': get_weekday(get_match_date(SEASON_YEAR, month_display)),
                             '구장': f'{field_name}구장 ({field_num}구장)',
                             '함께하는 팀들': ', '.join([get_team_name(t) for t in other_teams]),
                             '상태': '경기'
@@ -463,7 +384,7 @@ with tab2:
             schedule_df = pd.DataFrame(team_schedule)
             
             # 휴식인 행은 별도 스타일 적용
-            st.markdown(f"### 📅 {selected_team_name} 전체 일정 (2026 시즌)")
+            st.markdown(f"### 📅 {selected_team_name} 전체 일정 ({SEASON_YEAR} 시즌)")
             st.markdown(f"총 {len(team_schedule)}개월 중 경기 {len([s for s in team_schedule if s['상태'] == '경기'])}개월, 휴식 {len([s for s in team_schedule if s['상태'] == '휴식'])}개월")
             
             # 날짜와 요일을 함께 표시
@@ -626,10 +547,10 @@ with tab3:
 # -------------------------------
 # 7️⃣ 푸터
 # -------------------------------
-st.markdown("""
+st.markdown(f"""
 ---
 <div style="text-align: center; color: #666; padding: 2rem;">
-    <p style="font-size: 1rem; margin-bottom: 0.5rem;">⚽ 2026 포항 축구 구장 대진표</p>
+    <p style="font-size: 1rem; margin-bottom: 0.5rem;">⚽ {SEASON_YEAR} 포항60대축구연합회 리그전 대진표</p>
     <p style="font-size: 0.8rem; opacity: 0.7;">데이터 기반 일정 관리 시스템 | 모든 팀을 위한 공정한 대진표</p>
     <p style="font-size: 0.7rem; opacity: 0.5; margin-top: 1rem;">🏆 Fair Play, Fair Game</p>
 </div>
